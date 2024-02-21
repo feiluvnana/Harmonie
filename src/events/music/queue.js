@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder } = require("discord.js");
+const { getQueueString } = require("../../utils/string");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -7,24 +8,16 @@ module.exports = {
         .setDescription("Get the current queue.")
     ,
     run: async ({ client, interaction }) => {
-        if (!interaction.member.voice.channel) return interaction.reply("You need to be in a Voice Channel to use this command.");
-        const queue = await client.player.nodes.get(interaction.guild) || await client.player.nodes.create(interaction.guild);
+        await interaction.deferReply();
 
-        console.log(queue)
+        if (!interaction.member.voice.channel) return interaction.editReply("You need to be in a Voice Channel to use this command.");
 
-        if (queue.tracks.size === 0) {
-            await interaction.reply("The current queue is empty.");
-            return;
-        }
+        const queue = await client.player.nodes.get(interaction.guild);
+        if (!queue || queue.tracks.size === 0) return interaction.editReply("The current queue is empty.");
 
-        const queueString = queue.tracks.data.slice(0, 10).map((song, i) => {
-            return `${i + 1}. [${song.duration}] ${song.title} - <@${song.requestedBy.id}>`
-        }).join("\n")
-
-        // Get the current song
+        const queueString = getQueueString(queue)
         const currentSong = queue.currentTrack
-
-        await interaction.reply({
+        await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setDescription(`**Currently Playing**\n` +
