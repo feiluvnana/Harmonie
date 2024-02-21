@@ -52,7 +52,7 @@ async function handleSongSubcommand({ player, queue, interaction }) {
   if (result.tracks.length === 0) return interaction.editReply("Harmonie can't find any song for this keyword. Gomennasai~");
 
   const song = result.tracks[0];
-  await queue.addTrack(song);
+  await queue.history.push(song);
   embed
     .setDescription(`**[${song.title}](${song.url})** has been added to the queue.`)
     .setThumbnail(song.thumbnail)
@@ -71,8 +71,7 @@ async function handlePlaylistSubcommand({ player, queue, interaction }) {
     searchEngine: QueryType.YOUTUBE_PLAYLIST,
   });
   if (result.tracks.length === 0) return interaction.editReply("Harmonie can't find any playlist for this url. Gomennasai~");
-  await queue.addTrack(result.tracks);
-  console.log(result)
+  await queue.history.push(result.tracks);
   embed
     .setDescription(`<@${result.requestedBy.id}> has added *${result.tracks.length}* tracks from **[${result.playlist.title}](${result.playlist.url})** to the queue.`)
     .setThumbnail(result.tracks[0].thumbnail)

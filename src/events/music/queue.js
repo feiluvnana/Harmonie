@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder } = require("discord.js");
-const { getQueueString } = require("../../utils/string");
+const { getQueueString, getTrackListDuration, getQueueRemainingDuration } = require("../../utils/string");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,16 +15,12 @@ module.exports = {
         const queue = await client.player.nodes.get(interaction.guild);
         if (!queue || queue.tracks.size === 0) return interaction.editReply("The current queue is empty.");
 
-        const queueString = getQueueString(queue)
-        const currentSong = queue.currentTrack
         await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setDescription(`**Currently Playing**\n` +
-                        (currentSong ? `\`[${currentSong.duration}]\` ${currentSong.title} - <@${currentSong.requestedBy.id}>` : "None") +
-                        `\n\n**Queue**\n${queueString}`
-                    )
-                    .setThumbnail(currentSong.thumbnail)
+                    .setDescription(getQueueString(queue))
+                    .setThumbnail(queue.currentTrack.thumbnail)
+                    .setFooter({ text: `Number of tracks: ${queue.tracks.size}\nRemaining duration: ${getQueueRemainingDuration(queue)}` })
             ]
         })
     },
